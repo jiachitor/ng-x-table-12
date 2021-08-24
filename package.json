@@ -1,9 +1,16 @@
 {
-  "name": "@ng-dms/x-table-12",
-  "version": "2.1.1",
-  "author": "xu junzhou",
+  "name": "x-table-12",
+  "version": "0.0.1",
+  "author": "jiachitor",
   "license": "MIT",
-  "keywords": ["angular", "ngx-table", "table", "ng-table", "datatable"],
+  "keywords": [
+    "angular",
+    "ngx-table",
+    "@ng-dms/x-table",
+    "table",
+    "ng-table",
+    "datatable"
+  ],
   "description": "Angular 表格组件",
   "homepage": "https://gitee.com/xujz520/ng-x-table",
   "repository": {
