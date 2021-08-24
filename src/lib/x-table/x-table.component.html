@@ -1,0 +1,96 @@
+<div class="x-table-container" [ngClass]="{ 'ant-design-style': antDesignStyle, 'x-table-bordered': bordered, 'x-table-condensed': condensed }" *ngIf="!lazy || hasCallReload">
+  <!-- 工具栏 -->
+  <div class="x-table-toolbar" *ngIf="toolbar">
+    <ng-container *ngTemplateOutlet="toolbar"></ng-container>
+  </div>
+
+  <div class="x-table-wrap">
+    <table [ngClass]="{ 
+      'x-table': true, 
+      'x-table-striped': striped, 
+      'x-table-hover': hover, 
+      'x-table-nowrap': nowrap, 
+      'x-table-fixed': fixedLayout, 
+      'x-table-sticky-thead': true }">
+      <thead>
+        <tr *ngFor="let tr of theadRows; trackBy: trackBy" [ngClass]="tr.class" [ngStyle]="tr.style">
+          <th *ngFor="let th of tr.columns; trackBy: trackBy" [ngClass]="th.class" [ngStyle]="th.style" [x-attr]="th.attr" (click)="onThSortClick(th.column)">
+            <ng-container [ngSwitch]="th.column.type">
+              <ng-container *ngSwitchCase="'rowNumber'">{{th.column.title}}</ng-container>
+              <ng-container *ngSwitchCase="'chk'">
+                <span class="x-table-chk-icon" (click)="onToggleAllChk()"></span>
+              </ng-container>
+              <ng-container *ngSwitchDefault>
+                <ng-container *ngTemplateOutlet="render; context: { $implicit: th.render }"></ng-container>
+              </ng-container>
+            </ng-container>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tr of tbodyRows; trackBy: trackBy" [ngClass]="tr.class" [ngStyle]="tr.style">
+          <td *ngFor="let td of tr.columns; trackBy: trackBy" [ngClass]="td.class" [ngStyle]="td.style" [x-attr]="td.attr" (click)="onToggleChk(tr.rowData, td.column)">
+            <ng-container *ngIf="!td.isNone" [ngSwitch]="td.column.type">
+              <ng-container *ngSwitchCase="'rowNumber'">{{tr.rowNumber}}</ng-container>
+              <ng-container *ngSwitchCase="'chk'">
+                <span class="x-table-chk-icon"></span>
+              </ng-container>
+              <ng-container *ngSwitchDefault>
+                <ng-container *ngTemplateOutlet="render; context: { $implicit: td.render }"></ng-container>
+              </ng-container>
+            </ng-container>
+          </td>
+        </tr>
+        <tr *ngIf="currentPageData.length == 0">
+          <td class="x-table-empty" [class.x-table-empty-loading]="loading" [attr.colspan]="tbodyColumns.length"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 单元格渲染模板 -->
+    <ng-template #render let-data>
+      <ng-container [ngSwitch]="data.renderType">
+        <ng-container *ngSwitchCase="'string'">{{data.render}}</ng-container>
+        <ng-container *ngSwitchCase="'function'">
+          <span [innerHTML]="data.render"></span>
+        </ng-container>
+        <ng-container *ngSwitchCase="'template'">
+          <ng-container *ngTemplateOutlet="data.render; context: { $implicit: data.rowData, rowNumber: data.rowNumber, rowIterator: data.rowIterator, column: data.column, columnIterator: data.columnIterator }"></ng-container>
+        </ng-container>
+      </ng-container>
+    </ng-template>
+  </div>
+
+  <!-- 分页 -->
+  <div class="x-table-paging" *ngIf="showPagination">
+    <span class="x-table-paging-info" *ngIf="showPaginationInfo">{{paginationInfo}}</span>
+    <span class="x-table-paging-info x-table-checked-info" [style.visibility]="showCheckbox && checkedRows.length ? 'visible' : 'hidden'">选中 {{checkedRows.length}} 条</span>
+    <select class="x-table-paging-size" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()">
+      <option *ngFor="let item of pageSizeList" [ngValue]="item">{{item}}条/页</option>
+    </select>
+    <ul class="bt-pagination">
+      <li [class.disabled]="pageIndex == 1" (click)="onPaginationClick(pageIndex - 1)"><a>上一页</a></li>
+      <li *ngFor="let item of paginationBtns" [class.active]="item.pageIndex == pageIndex" (click)="onPaginationClick(item.pageIndex)"><a>{{item.text}}</a></li>
+      <li *ngIf="!flowPagination" [class.disabled]="!totalPageNumber || pageIndex == totalPageNumber" (click)="onPaginationClick(pageIndex + 1)"><a>下一页</a></li>
+      <li *ngIf="flowPagination" [class.disabled]="(lastPageIndex != null) && (pageIndex >= lastPageIndex)" (click)="onPaginationClick(pageIndex + 1)"><a>下一页</a></li>
+    </ul>
+  </div>
+
+  <!-- loading -->
+  <div class="x-table-loading" @insertRemoveTrigger *ngIf="loading">
+    <div>
+      <div></div>
+    </div>
+  </div>
+
+  <!-- 错误消息 -->
+  <div *ngIf="msg" class="x-table-msg-container" @MsgInsertRemoveTrigger>
+    <div class="x-table-msg">
+      <svg viewBox="64 64 896 896" focusable="false" fill="currentColor" width="1em" height="1em" class="ng-tns-c1-0" data-icon="close-circle" aria-hidden="true">
+        <path d="M685.4 354.8c0-4.4-3.6-8-8-8l-66 .3L512 465.6l-99.3-118.4-66.1-.3c-4.4 0-8 3.5-8 8 0 1.9.7 3.7 1.9 5.2l130.1 155L340.5 670a8.32 8.32 0 00-1.9 5.2c0 4.4 3.6 8 8 8l66.1-.3L512 564.4l99.3 118.4 66 .3c4.4 0 8-3.5 8-8 0-1.9-.7-3.7-1.9-5.2L553.5 515l130.1-155c1.2-1.4 1.8-3.3 1.8-5.2z"></path>
+        <path d="M512 65C264.6 65 64 265.6 64 513s200.6 448 448 448 448-200.6 448-448S759.4 65 512 65zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"></path>
+      </svg>
+      <span>{{msg}}</span>
+    </div>
+  </div>
+</div>
